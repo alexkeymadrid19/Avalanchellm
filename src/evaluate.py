@@ -1,32 +1,31 @@
-# Evaluation Metrics and Visualization for Avalanche Model
-
-import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import joblib
 
-# Function to calculate evaluation metrics
+# Load the trained model
+model = joblib.load('path/to/your_model_file')
+# Load the test data
+# You should replace this with your actual test data loading code
+X_test = pd.read_csv('path/to/your_test_data.csv')
+# Assuming you have the true labels as well
+y_true = X_test['true_labels']
+X_test = X_test.drop(columns=['true_labels'])
 
-def evaluate_model(y_true, y_pred):
-    accuracy = np.mean(y_true == y_pred)
-    precision = np.sum((y_true == 1) & (y_pred == 1)) / np.sum(y_pred == 1)
-    recall = np.sum((y_true == 1) & (y_pred == 1)) / np.sum(y_true == 1)
-    f1_score = 2 * (precision * recall) / (precision + recall)
-    return accuracy, precision, recall, f1_score
+# Make predictions
+y_pred = model.predict(X_test)
 
-# Function to visualize the results
+# Calculate metrics
+accuracy = accuracy_score(y_true, y_pred)
+precision = precision_score(y_true, y_pred, average='weighted')
+recall = recall_score(y_true, y_pred, average='weighted')
+f1 = f1_score(y_true, y_pred, average='weighted')
+confusion = confusion_matrix(y_true, y_pred)
 
-def visualize_results(y_true, y_pred):
-    plt.figure(figsize=(10, 5))
-    plt.scatter(range(len(y_true)), y_true, color='blue', label='True Values')
-    plt.scatter(range(len(y_pred)), y_pred, color='red', label='Predicted Values', alpha=0.5)
-    plt.title('Model Evaluation')
-    plt.xlabel('Sample Index')
-    plt.ylabel('Values')
-    plt.legend()
-    plt.show()
-
-# Example usage
-if __name__ == '__main__':
-    y_true = np.array([1, 0, 1, 1, 0, 1, 0])
-    y_pred = np.array([1, 0, 1, 0, 0, 1, 1])
-    metrics = evaluate_model(y_true, y_pred)
-    print(f'Accuracy: {metrics[0]:.2f}, Precision: {metrics[1]:.2f}, Recall: {metrics[2]:.2f}, F1 Score: {metrics[3]:.2f}')
+# Print metrics
+print(f'Accuracy: {accuracy}')
+print(f'Precision: {precision}')
+print(f'Recall: {recall}')
+print(f'F1 Score: {f1}')
+print('Confusion Matrix:')
+print(confusion)
