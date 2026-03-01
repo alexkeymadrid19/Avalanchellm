@@ -1,1 +1,57 @@
-import numpy as np\nimport pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import classification_report, confusion_matrix\n\n# Load dataset\ndata = pd.read_csv('avalanche_data.csv')  # Make sure to have the dataset available\n\n# Preprocessing\nfeatures = data.drop('class', axis=1)  # Replace 'class' with your target variable column name\nlabels = data['class']  # Set your target variable\n\nX_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)\n\n# Model Training\nmodel = RandomForestClassifier(n_estimators=100, random_state=42)\nmodel.fit(X_train, y_train)\n\n# Predictions\ny_pred = model.predict(X_test)\n\n# Evaluation\nprint(confusion_matrix(y_test, y_pred))\nprint(classification_report(y_test, y_pred))\n\n# Save the model\nimport joblib\njoblib.dump(model, 'avalanche_model.pkl')
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils.data as data
+import os
+
+class AvalancheModel(nn.Module):
+    def __init__(self):
+        super(AvalancheModel, self).__init__()
+        self.fc = nn.Linear(10, 1)  # Example layer
+
+    def forward(self, x):
+        return self.fc(x)
+
+# Load dataset
+class AvalancheDataset(data.Dataset):
+    def __init__(self, data_path):
+        self.data = ...  # Load data from data_path
+        self.labels = ...  # Corresponding labels
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
+
+# Training function
+def train_model(model, dataloader, criterion, optimizer, num_epochs=10):
+    model.train()
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        for inputs, labels in dataloader:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
+        # Save checkpoint
+        if (epoch + 1) % 5 == 0:
+            save_checkpoint(model, epoch + 1)
+
+# Function to save model checkpoint
+def save_checkpoint(model, epoch):
+    checkpoint_path = f'checkpoint_epoch_{epoch}.pt'
+    torch.save(model.state_dict(), checkpoint_path)
+    print(f'Checkpoint saved: {checkpoint_path}')
+
+if __name__ == '__main__':
+    data_path = 'path/to/avalanche_data'  # Update this path
+    dataset = AvalancheDataset(data_path)
+    dataloader = data.DataLoader(dataset, batch_size=32, shuffle=True)
+    model = AvalancheModel()
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    train_model(model, dataloader, criterion, optimizer, num_epochs=20)
